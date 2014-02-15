@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(p2os_driver)
 
 find_package(catkin REQUIRED COMPONENTS diagnostic_updater nav_msgs message_generation roscpp geometry_msgs tf std_msgs)
-
+#find_package(catkin REQUIRED COMPONENTS nav_msgs message_generation roscpp geometry_msgs tf std_msgs)
 #######################################
 ## Declare ROS messages and services ##
 #######################################

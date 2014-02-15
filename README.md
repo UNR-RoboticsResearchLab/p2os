@@ -38,3 +38,14 @@ To Do:
 
 * The gazebo_plugin node for controlling the differential drive was recently removed (commented out in the CMakeLists.txt file) from Gazebo. So, the P2OS gazebo launch file fails. 
 * Update the rest of the packages to use the catkin build system instead of rosbuild.
+* In p2os_driver: make SendReceive, or more specifically the Receive part, asynchronous to improve controller response time
+
+Major changes 2/15/2014
+-----------------------
+
+Tim Sweet made the following major changes to the p2os_driver pacakge:
+--Changed pulse behavior such that the motors stay awake correctly when using a low-frequency controller
+--Minimized the number of sendReceive's performed to reduce latency
+--Added the private parameters use_gripper, use_ptz, and publish_dignostics. I did not change the default behvaior, but these parameters improve performance on ultra-low processing power machines such as the Raspberry Pi
+
+

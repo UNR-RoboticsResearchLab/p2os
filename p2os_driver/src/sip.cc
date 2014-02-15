@@ -1,7 +1,7 @@
 /*
  *  P2OS for ROS
  *  Copyright (C) 2009
- *     David Feil-Seifer, Brian Gerkey, Kasper Stoy, 
+ *     David Feil-Seifer, Brian Gerkey, Kasper Stoy,
  *      Richard Vaughan, & Andrew Howard
  *
  *
@@ -77,7 +77,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   data->position.twist.twist.linear.y = 0.0;
   data->position.twist.twist.angular.z = ((double)(rvel-lvel)/(2.0/PlayerRobotParams[param_idx].DiffConvFactor));
 
-  
+
   data->position.pose.covariance = boost::assign::list_of	(1e-3) (0)    (0)   (0)   (0)   (0)
                                                           (0)    (1e-3) (0)   (0)   (0)   (0)
                                                           (0)    (0)    (1e6) (0)   (0)   (0)
@@ -99,7 +99,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   data->odom_trans.transform.translation.x = px;
   data->odom_trans.transform.translation.y = py;
   data->odom_trans.transform.translation.z = 0;
-  data->odom_trans.transform.rotation = tf::createQuaternionMsgFromYaw(pa); 
+  data->odom_trans.transform.rotation = tf::createQuaternionMsgFromYaw(pa);
 
   // battery
   data->batt.voltage = battery / 10.0;
@@ -118,7 +118,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
 
   ///////////////////////////////////////////////////////////////
   // sonar
-  data->sonar.ranges_count = static_cast<int>(sonarreadings);
+/*  data->sonar.ranges_count = static_cast<int>(sonarreadings);
   data->sonar.ranges.clear();
   for(int i=0; i < data->sonar.ranges_count; i++)
     data->sonar.ranges.push_back(sonars[i] / 1e3);
@@ -212,7 +212,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   }
   // Store the last lift position
   lastLiftPos = data->gripper.lift.position;
-
+*/
   /*
   ///////////////////////////////////////////////////////////////
   // bumper
@@ -413,7 +413,7 @@ void SIP::ParseStandard( unsigned char *buffer )
 
   battery = buffer[cnt];
   cnt += sizeof(unsigned char);
-  ROS_DEBUG( "battery value: %d", battery );
+  //ROS_DEBUG( "battery value: %d", battery );
 
   lwstall = buffer[cnt] & 0x01;
   rearbumpers = buffer[cnt] >> 1;
@@ -434,7 +434,7 @@ void SIP::ParseStandard( unsigned char *buffer )
   cnt += sizeof(short);
 
   //compass = buffer[cnt]*2;
-  if(buffer[cnt] != 255 && buffer[cnt] != 0 && buffer[cnt] != 181)
+/*  if(buffer[cnt] != 255 && buffer[cnt] != 0 && buffer[cnt] != 181)
     compass = (buffer[cnt]-1)*2;
   cnt += sizeof(unsigned char);
 
@@ -486,6 +486,7 @@ void SIP::ParseStandard( unsigned char *buffer )
   // for debugging:
   Print();
   // PrintSonars();
+*/
 }
 
 /** Parse a SERAUX SIP packet.  For a CMUcam, this will have blob

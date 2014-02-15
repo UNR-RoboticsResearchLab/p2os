@@ -46,19 +46,22 @@ int main( int argc, char** argv )
   p->ResetRawPositions();
 
   ros::Time lastTime;
-  
+
   while( ros::ok() )
   {
+	//sleep(1);
+	//ROS_INFO("checking and setting velocity");
     p->check_and_set_vel();
+    //ROS_INFO("checked and set velocity");
     p->check_and_set_motor_state();
-    p->check_and_set_gripper_state();
+ //   p->check_and_set_gripper_state();
 
     if( p->get_pulse() > 0 )
     {
       ros::Time currentTime = ros::Time::now();
       ros::Duration pulseInterval = currentTime - lastTime;
       if( pulseInterval.toSec() > p->get_pulse() )
-      {	
+      {
 				ROS_DEBUG ("sending pulse" );
         p->SendPulse();
         lastTime = currentTime;

@@ -59,15 +59,11 @@ typedef struct ros_p2os_data
 } ros_p2os_data_t;
 
 // this is here because we need the above typedef's before including it.
-#include "sip.h"
-#include "kinecalc.h"
+#include "sip.h"	//is a data container
 
-#include "p2os_ptz.h"
+#include "p2os_ptz.h" //controls a camera
 
 class SIP;
-
-// Forward declaration of the KineCalc_Base class declared in kinecalc_base.h
-//class KineCalc;
 
 
 class P2OSNode
@@ -106,16 +102,16 @@ class P2OSNode
 
     void check_and_set_gripper_state();
     void gripperCallback(const p2os_driver::GripperStateConstPtr &msg);
-    double get_pulse() {return pulse;}
+    double get_pulse() {return pulse_;}
 
 		// diagnostic messages
 		void check_voltage( diagnostic_updater::DiagnosticStatusWrapper &stat );
 		void check_stall( diagnostic_updater::DiagnosticStatusWrapper &stat );
 
   protected:
-    ros::NodeHandle n;
-    ros::NodeHandle nh_private;
- 
+    ros::NodeHandle n_;
+    ros::NodeHandle nh_private_;
+
     diagnostic_updater::Updater diagnostic_;
 
     diagnostic_updater::DiagnosedPublisher<p2os_driver::BatteryState> batt_pub_;
@@ -123,34 +119,37 @@ class P2OSNode
       ptz_state_pub_, sonar_pub_, aio_pub_, dio_pub_;
     ros::Subscriber cmdvel_sub_, cmdmstate_sub_, gripper_sub_, ptz_cmd_sub_;
 
-    tf::TransformBroadcaster odom_broadcaster;
-    ros::Time veltime;
+    tf::TransformBroadcaster odom_broadcaster_;
+    ros::WallTime last_velocity_send_time_;
 
-    SIP* sippacket;
-    std::string psos_serial_port;
-    std::string psos_tcp_host;
-    int         psos_fd;
-    bool        psos_use_tcp;
-    int         psos_tcp_port;
-    bool        vel_dirty, motor_dirty;
+    SIP* sippacket_;
+    std::string psos_serial_port_;
+    std::string psos_tcp_host_;
+    int         psos_fd_;
+    bool        psos_use_tcp_;
+    int         psos_tcp_port_;
+    bool        vel_dirty_, motor_dirty_;
     bool        gripper_dirty_;
-    int         param_idx;
+    int         param_idx_;
     // PID settings
-    int rot_kp, rot_kv, rot_ki, trans_kp, trans_kv, trans_ki;
+    int rot_kp_, rot_kv_, rot_ki_, trans_kp_, trans_kv_, trans_ki_;
 
     int bumpstall; // should we change the bumper-stall behavior?
-    int joystick;
-    int direct_wheel_vel_control;
-    int radio_modemp;
+    int joystick_;
+    int direct_wheel_vel_control_;
+    int radio_modemp_;
 
-    int motor_max_speed;
-    int motor_max_turnspeed;
-    short motor_max_trans_accel, motor_max_trans_decel;
-    short motor_max_rot_accel, motor_max_rot_decel;
-    double pulse; // Pulse time
-    double desired_freq;
-    double lastPulseTime; // Last time of sending a pulse or command to the robot
+    int motor_max_speed_;
+    int motor_max_turnspeed_;
+    short motor_max_trans_accel, motor_max_trans_decel_;
+    short motor_max_rot_accel, motor_max_rot_decel_;
+    double pulse_; // Pulse time
+    double desired_freq_;
+    double lastPulseTime_; // Last time of sending a pulse or command to the robot
     bool use_sonar_;
+    bool use_gripper_;
+    bool use_ptz_;
+    bool publish_diagnostics_;
 
     P2OSPtz ptz_;
 
