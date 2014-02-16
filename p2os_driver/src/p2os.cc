@@ -95,7 +95,7 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   n_private.param( "max_yawdecel", spd, 0.0);
   motor_max_rot_decel_ = (short)rint(RTOD(spd));
   //publish diagnostic data?
-  n_private.param( "publish_disgnostics",publish_diagnostics_,true);
+  n_private.param( "publish_diagnostics",publish_diagnostics_,true);
 
   desired_freq_ = 10;
 
