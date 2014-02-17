@@ -56,7 +56,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
                                (this->ypos/1e3) * cos(rot));
     pa = DTOR(this->angle_offset + angle);
   }
-  else
+  else 
   {
     px += this->xpos / 1e3;
     py += this->ypos / 1e3;
@@ -396,6 +396,8 @@ void SIP::ParseStandard( unsigned char *buffer )
   rawypos = newypos;
   cnt += sizeof(short);
 
+  //ROS_INFO_STREAM("raw angle: "<<(short)(buffer[cnt] | (buffer[cnt+1] << 8)));
+  //ROS_INFO_STREAM("first byte: "<<(int)buffer[cnt]<<" second byte: "<<(int)buffer[cnt+1] );
   angle = (short)
     rint(((short)(buffer[cnt] | (buffer[cnt+1] << 8))) *
 	 PlayerRobotParams[param_idx].AngleConvFactor * 180.0/M_PI);
