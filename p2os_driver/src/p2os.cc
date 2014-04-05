@@ -157,6 +157,35 @@ P2OSNode::check_and_set_motor_state()
 }
 
 void
+P2OSNode::check_and_set_gripper_state()
+{
+  if( !gripper_dirty_ ) return;
+  gripper_dirty_ = false;
+
+  // Send the gripper command
+  unsigned char grip_val = (unsigned char) gripper_state_.grip.state;
+  unsigned char grip_command[4];
+  P2OSPacket grip_packet;
+  grip_command[0] = GRIPPER;
+  grip_command[1] = ARGINT;
+  grip_command[2] = grip_val;
+  grip_command[3] = 0;
+  grip_packet.Build(grip_command,4);
+  SendReceive(&grip_packet,false);
+
+  // Send the lift command
+  unsigned char lift_val = (unsigned char) gripper_state_.lift.state;
+  unsigned char lift_command[4];
+  P2OSPacket lift_packet;
+  lift_command[0] = GRIPPER;
+  lift_command[1] = ARGINT;
+  lift_command[2] = lift_val;
+  lift_command[3] = 0;
+  lift_packet.Build(lift_command,4);
+  SendReceive(&lift_packet,false);
+}
+
+void
 P2OSNode::cmdvel_cb( const geometry_msgs::TwistConstPtr &msg)
 {
 	ROS_DEBUG("Got velocity packet at %f",ros::Time::now().toSec());
