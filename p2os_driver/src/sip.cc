@@ -122,9 +122,16 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   data->sonar.ranges.clear();
   for(int i=0; i < data->sonar.ranges_count; i++)
     data->sonar.ranges.push_back(sonars[i] / 1e3);
-
+*/
   ///////////////////////////////////////////////////////////////
   // gripper
+
+  //BLAKE: this seems to be ok
+	//matches other versions
+	//Are these checks up to date?
+
+  //BLAKE: Why is the gripState assigned to timer?
+	//only updated in ParseStandard
   unsigned char gripState = timer;
   if ((gripState & 0x01) && (gripState & 0x02) && !(gripState & 0x04))
   {
@@ -155,7 +162,8 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   data->gripper.grip.outer_beam = false;
   data->gripper.grip.left_contact = false;
   data->gripper.grip.right_contact = false;
-
+  //BLAKE: why is digin used for comparison?
+	//only updated in ParseStandard
   if (digin & 0x08)
   {
     data->gripper.grip.inner_beam = true;
@@ -174,6 +182,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   }
 
   // lift
+	//BLAKE: why is this being init to 0 and not last/current lift?
   data->gripper.lift.dir = 0;
 
   if ((gripState & 0x10) && (gripState & 0x20) && !(gripState & 0x40))
@@ -212,7 +221,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   }
   // Store the last lift position
   lastLiftPos = data->gripper.lift.position;
-*/
+
   /*
   ///////////////////////////////////////////////////////////////
   // bumper
@@ -473,6 +482,11 @@ void SIP::ParseStandard( unsigned char *buffer )
       cnt+=sizeof(unsigned char)+sizeof(unsigned short);
   }
   }
+*/
+
+  //BLAKE: this is where timer and digin are updated
+	//this affects the gripper checks
+	//why is this in here?
 
   timer = (buffer[cnt] | (buffer[cnt+1] << 8));
   cnt += sizeof(short);
@@ -488,7 +502,7 @@ void SIP::ParseStandard( unsigned char *buffer )
   // for debugging:
   Print();
   // PrintSonars();
-*/
+
 }
 
 /** Parse a SERAUX SIP packet.  For a CMUcam, this will have blob

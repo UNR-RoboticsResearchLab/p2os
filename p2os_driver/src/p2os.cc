@@ -30,6 +30,8 @@
 
 
 P2OSNode::P2OSNode( ros::NodeHandle nh ) :
+    //BLAKE: does this set dirty gripper to false?
+	//check and set gripper state returns immediately if dirty false
     n_(nh), gripper_dirty_(false),
     batt_pub_( n_.advertise<p2os_driver::BatteryState>("battery_state",1000),
                diagnostic_,
@@ -41,7 +43,7 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   ros::NodeHandle n_private("~");
   n_private.param("use_sonar", use_sonar_, false);
   // Use gripper?
-  n_private.param( "use_gripper",use_gripper_,true);
+  n_private.param( "use_gripper",use_gripper_,true); //gripper is being used
   // Use ptz?
   n_private.param( "use_ptz",use_ptz_,true);
 
@@ -112,6 +114,11 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   cmdvel_sub_ = n_.subscribe("cmd_vel", 1, &P2OSNode::cmdvel_cb, this);
   cmdmstate_sub_ = n_.subscribe("cmd_motor_state", 1, &P2OSNode::cmdmotor_state,
                                this);
+
+  //BLAKE: Gripper subscription set to gripper_control (this is correct)
+ 	//gripper control messages are being received
+ 	//gripper is responding to control messages
+	//gripper state is not being reflected
   if (use_gripper_) gripper_sub_ = n_.subscribe("gripper_control", 1, &P2OSNode::gripperCallback,
                              this);
   if (use_ptz_) ptz_cmd_sub_ = n_.subscribe("ptz_control", 1, &P2OSPtz::callback, &ptz_);
@@ -155,6 +162,46 @@ P2OSNode::check_and_set_motor_state()
   p2os_data.motors.state = cmdmotor_state_.state;
   SendReceive(&packet,false);
 }
+
+//BLAKE: This function was missing
+void
+P2OSNode::check_and_set_gripper_state()
+{
+ /*BLAKE:
+  Should we change the gripper state in here?
+  This seems to only send the commands to the gripper
+ */
+
+ if( !gripper_dirty_ ){
+	return;
+ }
+ gripper_dirty_ = false;
+
+ //send the gripper command
+ unsigned char grip_val = (unsigned char) gripper_state_.grip.state;
+ unsigned char grip_command[4];
+ P2OSPacket grip_packet;
+ grip_command[0] = GRIPPER;
+ grip_command[1] = ARGINT;
+ grip_command[2] = grip_val;
+ grip_command[3] = 0;
+ grip_packet.Build(grip_command, 4);
+ //BLAKE: should the publish bool be true?
+ SendReceive(&grip_packet, false);
+
+ //send the lift command
+ unsigned char lift_val = (unsigned char) gripper_state_.lift.state;
+ unsigned char lift_command[4];
+ P2OSPacket lift_packet;
+ lift_command[0] = GRIPPER;
+ lift_command[1] = ARGINT;
+ lift_command[2] = lift_val;
+ lift_command[3] = 0;
+ lift_packet.Build(lift_command, 4);
+ //BLAKE: should the publish bool be true?
+ SendReceive(&lift_packet, false);
+}
+
 
 void
 P2OSNode::cmdvel_cb( const geometry_msgs::TwistConstPtr &msg)
@@ -249,8 +296,9 @@ P2OSNode::check_and_set_vel()
 void
 P2OSNode::gripperCallback(const p2os_driver::GripperStateConstPtr &msg)
 {
+  //BLAKE: does dirty need to be set to false?
   gripper_dirty_ = true;
-  gripper_state_ = *msg;
+  gripper_state_ =  *msg;
 }
 
 int
@@ -497,7 +545,8 @@ P2OSNode::Setup()
   {
     sippacket_ = new SIP(param_idx_);
   }
-/*
+/*BLAKE: is this needed?
+
   sippacket_->x_offset = 0;
   sippacket_->y_offset = 0;
   sippacket_->angle_offset = 0;
@@ -709,6 +758,8 @@ P2OSNode::StandardSIPPutData(ros::Time ts)
   if (publish_diagnostics_) dio_pub_.publish( p2os_data.dio);
 
   // put gripper data
+	//The p2os_data.gripper may not be the current gripper state
+	//TODO -find where p2os_data.gripper is being set
   if (use_gripper_) grip_state_pub_.publish( p2os_data.gripper );
   if (use_ptz_) ptz_state_pub_.publish( ptz_.getCurrentState() );
 
@@ -982,6 +1033,8 @@ void P2OSNode::SendPulse (void)
 
   command = PULSE;
   packet.Build(&command, 1);
-  //SendReceive(&packet);
+
+  //BLAKE: this was commented out
+  SendReceive(&packet);
 }
 
