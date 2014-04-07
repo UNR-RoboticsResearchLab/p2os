@@ -54,7 +54,8 @@ int main( int argc, char** argv )
     p->check_and_set_vel();
     //ROS_INFO("checked and set velocity");
     p->check_and_set_motor_state();
- //   p->check_and_set_gripper_state();
+    //BLAKE: uncommented this call for the gripper
+    p->check_and_set_gripper_state();
 
     if( p->get_pulse() > 0 )
     {
