@@ -63,8 +63,8 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   // trans_ki
   n_private.param( "trans_ki", trans_ki_, -1 );
   // port
-  std::string def = DEFAULT_P2OS_PORT;
-  n_private.param( "port", psos_serial_port_, def );
+  std::string default_port = DEFAULT_P2OS_PORT;
+  n_private.param( "port", psos_serial_port_, default_port );
   n_private.param( "use_tcp", psos_use_tcp_, false );
   std::string host = DEFAULT_P2OS_TCP_REMOTE_HOST;
   n_private.param( "tcp_remote_host", psos_tcp_host_, host );
@@ -198,13 +198,9 @@ P2OSNode::cmdvel_cb( const geometry_msgs::TwistConstPtr &msg)
   if( fabs( msg->linear.x - cmdvel_.linear.x ) > 0.01 || fabs( msg->angular.z-cmdvel_.angular.z) > 0.01 )
   {
     ROS_DEBUG( "new speed: [%0.2f,%0.2f](%0.3f)", msg->linear.x*1e3, msg->angular.z, ros::Time::now().toSec() );
-    vel_dirty_ = true;
     cmdvel_ = *msg;
   }
-  else if(ros::WallTime::now().toSec() - last_velocity_send_time_.toSec() > 0.5)
-  {
-    vel_dirty_ = true;
-  }
+  //this keeps the motors online even when they are getting the same command repeatedly
   vel_dirty_ = true;
 
 
@@ -217,9 +213,10 @@ P2OSNode::check_and_set_vel()
   //was and send a pulse if necessary
   //it actually checks if the time is greater than 0.4, which should catch
   //the time within 0.5 seconds and send the pulse
-  if(ros::WallTime::now().toSec() - last_velocity_send_time_.toSec() > 0.5) {
+  //the pulse stops the motors but keeps them awake
+  if(ros::WallTime::now().toSec() - last_velocity_send_time_.toSec() > 0.4) {
 	  SendPulse();
-	  //last_velocity_send_time_ = ros::WallTime::now();
+	  last_velocity_send_time_ = ros::WallTime::now();
   }
   if( !vel_dirty_ ) return;
   else ROS_DEBUG("Velocity dirty");
@@ -743,8 +740,6 @@ P2OSNode::StandardSIPPutData(ros::Time ts)
   if (publish_diagnostics_) dio_pub_.publish( p2os_data.dio);
 
   // put gripper data
-	//The p2os_data.gripper may not be the current gripper state
-	//TODO -find where p2os_data.gripper is being set
   if (use_gripper_) grip_state_pub_.publish( p2os_data.gripper );
   if (use_ptz_) ptz_state_pub_.publish( ptz_.getCurrentState() );
 
@@ -809,7 +804,7 @@ P2OSNode::SendReceive(P2OSPacket* pkt, bool publish_data)
     }
     else
     {
-      ROS_ERROR("Received other packet!");
+      ROS_ERROR("Received other (probably malformed) packet!");
       packet.PrintHex();
     }
 
@@ -1019,7 +1014,6 @@ void P2OSNode::SendPulse (void)
   command = PULSE;
   packet.Build(&command, 1);
 
-  //BLAKE: this was commented out
   SendReceive(&packet);
 }
 

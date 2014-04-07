@@ -189,8 +189,8 @@ class TeleopBase
     else
     {
       //cmd.linear.x = cmd.linear.y = cmd.angular.z = 0;
-      cmd = passthrough_cmd;
-      //if (!deadman_no_publish_)
+      //cmd = passthrough_cmd;
+      if (!deadman_no_publish_)
       {
         vel_pub_.publish(cmd);//Only publish if deadman_no_publish is enabled
 

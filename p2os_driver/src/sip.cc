@@ -109,29 +109,24 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   // not tell us whether they have been enabled
   // data->motors.state = (status & 0x01);
 	data->motors.state = (motors_enabled & 0x01);
-  /*
+  
   ///////////////////////////////////////////////////////////////
   // compass
-  memset(&(data->compass),0,sizeof(data->compass));
-  data->compass.pos.pa = DTOR(this->compass);
-  */
+  //TODO: broken, Tim doesn't have a compass so I can't fix this, if anyone
+  //      has one and wants to help me fix it email me
+  //memset(&(data->compass),0,sizeof(data->compass));
+  //data->compass.pos.pa = DTOR(this->compass);
+  
 
   ///////////////////////////////////////////////////////////////
   // sonar
-/*  data->sonar.ranges_count = static_cast<int>(sonarreadings);
+  data->sonar.ranges_count = static_cast<int>(sonarreadings);
   data->sonar.ranges.clear();
   for(int i=0; i < data->sonar.ranges_count; i++)
     data->sonar.ranges.push_back(sonars[i] / 1e3);
-*/
   ///////////////////////////////////////////////////////////////
   // gripper
 
-  //BLAKE: this seems to be ok
-	//matches other versions
-	//Are these checks up to date?
-
-  //BLAKE: Why is the gripState assigned to timer?
-	//only updated in ParseStandard
   unsigned char gripState = timer;
   if ((gripState & 0x01) && (gripState & 0x02) && !(gripState & 0x04))
   {
@@ -162,8 +157,7 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   data->gripper.grip.outer_beam = false;
   data->gripper.grip.left_contact = false;
   data->gripper.grip.right_contact = false;
-  //BLAKE: why is digin used for comparison?
-	//only updated in ParseStandard
+  
   if (digin & 0x08)
   {
     data->gripper.grip.inner_beam = true;
@@ -182,7 +176,6 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   }
 
   // lift
-	//BLAKE: why is this being init to 0 and not last/current lift?
   data->gripper.lift.dir = 0;
 
   if ((gripState & 0x10) && (gripState & 0x20) && !(gripState & 0x40))
@@ -222,9 +215,12 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   // Store the last lift position
   lastLiftPos = data->gripper.lift.position;
 
-  /*
+  
   ///////////////////////////////////////////////////////////////
   // bumper
+  //TODO: broken, Tim doesn't have a bumper to test it with. If someone has a 
+  //      bumper and wants help fixing this: email me.
+  /*
   unsigned int bump_count = PlayerRobotParams[param_idx].NumFrontBumpers + PlayerRobotParams[param_idx].NumRearBumpers;
   if (data->bumper.bumpers_count != bump_count)
   {
@@ -239,8 +235,8 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   for(int i=PlayerRobotParams[param_idx].NumRearBumpers-1;i>=0;i--)
     data->bumper.bumpers[j++] =
       (unsigned char)((this->rearbumpers >> i) & 0x01);
+  
   */
-
   ///////////////////////////////////////////////////////////////
   // digital I/O
   data->dio.count = 8;
@@ -250,9 +246,9 @@ void SIP::FillStandard(ros_p2os_data_t* data)
   // analog I/O
   //TODO: should do this smarter, based on which analog input is selected
   data->aio.voltages_count = (unsigned char)1;
-  // if (!data->aio.voltages)
-  //   data->aio.voltages = new float[1];
-  // data->aio.voltages[0] = (this->analog / 255.0) * 5.0;
+  //if (!data->aio.voltages)
+  //  data->aio.voltages = new float[1];
+  //data->aio.voltages[0] = (this->analog / 255.0) * 5.0;
   data->aio.voltages.clear();
   data->aio.voltages.push_back((this->analog / 255.0) * 5.0);
 }
@@ -405,8 +401,6 @@ void SIP::ParseStandard( unsigned char *buffer )
   rawypos = newypos;
   cnt += sizeof(short);
 
-  //ROS_INFO_STREAM("raw angle: "<<(short)(buffer[cnt] | (buffer[cnt+1] << 8)));
-  //ROS_INFO_STREAM("first byte: "<<(int)buffer[cnt]<<" second byte: "<<(int)buffer[cnt+1] );
   angle = (short)
     rint(((short)(buffer[cnt] | (buffer[cnt+1] << 8))) *
 	 PlayerRobotParams[param_idx].AngleConvFactor * 180.0/M_PI);
@@ -424,7 +418,6 @@ void SIP::ParseStandard( unsigned char *buffer )
 
   battery = buffer[cnt];
   cnt += sizeof(unsigned char);
-  //ROS_DEBUG( "battery value: %d", battery );
 
   lwstall = buffer[cnt] & 0x01;
   rearbumpers = buffer[cnt] >> 1;
@@ -444,7 +437,7 @@ void SIP::ParseStandard( unsigned char *buffer )
 	sonar_flag = buffer[cnt+1];
   cnt += sizeof(short);
 
-  //compass = buffer[cnt]*2;
+  compass = buffer[cnt]*2;
   if(buffer[cnt] != 255 && buffer[cnt] != 0 && buffer[cnt] != 181)
     compass = (buffer[cnt]-1)*2;
   cnt += sizeof(unsigned char);
@@ -484,10 +477,6 @@ void SIP::ParseStandard( unsigned char *buffer )
   }
 
 
-  //BLAKE: this is where timer and digin are updated
-	//this affects the gripper checks
-	//why is this in here?
-
   timer = (buffer[cnt] | (buffer[cnt+1] << 8));
   cnt += sizeof(short);
 
@@ -496,7 +485,7 @@ void SIP::ParseStandard( unsigned char *buffer )
 
   digin = buffer[cnt];
   cnt += sizeof(unsigned char);
-
+  
   digout = buffer[cnt];
   cnt += sizeof(unsigned char);
   // for debugging:
