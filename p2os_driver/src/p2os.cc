@@ -30,8 +30,6 @@
 
 
 P2OSNode::P2OSNode( ros::NodeHandle nh ) :
-    //BLAKE: does this set dirty gripper to false?
-	//check and set gripper state returns immediately if dirty false
     n_(nh), gripper_dirty_(false),
     batt_pub_( n_.advertise<p2os_driver::BatteryState>("battery_state",1000),
                diagnostic_,
@@ -115,10 +113,6 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   cmdmstate_sub_ = n_.subscribe("cmd_motor_state", 1, &P2OSNode::cmdmotor_state,
                                this);
 
-  //BLAKE: Gripper subscription set to gripper_control (this is correct)
- 	//gripper control messages are being received
- 	//gripper is responding to control messages
-	//gripper state is not being reflected
   if (use_gripper_) gripper_sub_ = n_.subscribe("gripper_control", 1, &P2OSNode::gripperCallback,
                              this);
   if (use_ptz_) ptz_cmd_sub_ = n_.subscribe("ptz_control", 1, &P2OSPtz::callback, &ptz_);
@@ -163,15 +157,9 @@ P2OSNode::check_and_set_motor_state()
   SendReceive(&packet,false);
 }
 
-//BLAKE: This function was missing
 void
 P2OSNode::check_and_set_gripper_state()
 {
- /*BLAKE:
-  Should we change the gripper state in here?
-  This seems to only send the commands to the gripper
- */
-
  if( !gripper_dirty_ ){
 	return;
  }
@@ -186,7 +174,6 @@ P2OSNode::check_and_set_gripper_state()
  grip_command[2] = grip_val;
  grip_command[3] = 0;
  grip_packet.Build(grip_command, 4);
- //BLAKE: should the publish bool be true?
  SendReceive(&grip_packet, false);
 
  //send the lift command
@@ -198,7 +185,6 @@ P2OSNode::check_and_set_gripper_state()
  lift_command[2] = lift_val;
  lift_command[3] = 0;
  lift_packet.Build(lift_command, 4);
- //BLAKE: should the publish bool be true?
  SendReceive(&lift_packet, false);
 }
 
@@ -296,7 +282,6 @@ P2OSNode::check_and_set_vel()
 void
 P2OSNode::gripperCallback(const p2os_driver::GripperStateConstPtr &msg)
 {
-  //BLAKE: does dirty need to be set to false?
   gripper_dirty_ = true;
   gripper_state_ =  *msg;
 }
@@ -545,7 +530,7 @@ P2OSNode::Setup()
   {
     sippacket_ = new SIP(param_idx_);
   }
-/*BLAKE: is this needed?
+/*
 
   sippacket_->x_offset = 0;
   sippacket_->y_offset = 0;
