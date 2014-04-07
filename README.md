@@ -13,13 +13,13 @@ p2os_driver
 -----------
 
 Essential to the P2OS is the driver. This controls the interface for the P2OS controller. 
-No catkin.
+Catkin support!
 
 p2os_launch
 -----------
 
 Relevant ROS launch files for the Robot. 
-No catkin.
+Catkin support!
 
 p2os_teleop
 -----------
