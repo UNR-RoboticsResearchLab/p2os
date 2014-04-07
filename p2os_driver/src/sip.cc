@@ -436,7 +436,7 @@ void SIP::ParseStandard( unsigned char *buffer )
   cnt += sizeof(short);
 
   //compass = buffer[cnt]*2;
-/*  if(buffer[cnt] != 255 && buffer[cnt] != 0 && buffer[cnt] != 181)
+  if(buffer[cnt] != 255 && buffer[cnt] != 0 && buffer[cnt] != 181)
     compass = (buffer[cnt]-1)*2;
   cnt += sizeof(unsigned char);
 
@@ -488,7 +488,6 @@ void SIP::ParseStandard( unsigned char *buffer )
   // for debugging:
   Print();
   // PrintSonars();
-*/
 }
 
 /** Parse a SERAUX SIP packet.  For a CMUcam, this will have blob
