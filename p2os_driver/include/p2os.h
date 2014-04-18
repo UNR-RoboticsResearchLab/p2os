@@ -56,6 +56,7 @@ typedef struct ros_p2os_data
     p2os_driver::DIO dio;
     p2os_driver::AIO aio;
     geometry_msgs::TransformStamped odom_trans;
+    std::string tf_prefix;
 } ros_p2os_data_t;
 
 // this is here because we need the above typedef's before including it.

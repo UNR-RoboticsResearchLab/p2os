@@ -96,6 +96,9 @@ P2OSNode::P2OSNode( ros::NodeHandle nh ) :
   motor_max_rot_decel_ = (short)rint(RTOD(spd));
   //publish diagnostic data?
   n_private.param( "publish_diagnostics",publish_diagnostics_,true);
+  //use tf_prefix?
+  static const std::string tf_prefix; 
+  n_private.param( "tf_prefix",this->p2os_data.tf_prefix,tf_prefix);
 
   desired_freq_ = 10;
 

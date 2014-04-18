@@ -71,11 +71,12 @@ class TeleopBase
   ros::Duration joy_msg_timeout_;
 
   ros::NodeHandle n_;
+  ros::NodeHandle n_pub_;
   ros::Publisher vel_pub_;
   ros::Subscriber joy_sub_;
   ros::Subscriber passthrough_sub_;
 
-  TeleopBase(bool deadman_no_publish = false) : max_vx(0.6), max_vy(0.6), max_vw(0.8), max_vx_run(0.6), max_vy_run(0.6), max_vw_run(0.8), deadman_no_publish_(deadman_no_publish), running_(false)
+  TeleopBase(bool deadman_no_publish = false) : max_vx(0.6), max_vy(0.6), max_vw(0.8), max_vx_run(0.6), max_vy_run(0.6), max_vw_run(0.8), deadman_no_publish_(deadman_no_publish), running_(false), n_("~")
   { }
 
   void init()
@@ -90,7 +91,7 @@ class TeleopBase
         n_.param("max_vy_run", max_vy_run, max_vy_run);
         n_.param("max_vw_run", max_vw_run, max_vw_run);
 
-        n_.param("axis_vx", axis_vx, 3);
+        n_.param("axis_vx", axis_vx, 0);
         n_.param("axis_vw", axis_vw, 0);
         n_.param("axis_vy", axis_vy, 2);
         
@@ -127,9 +128,9 @@ class TeleopBase
         ROS_INFO("run_button: %d", run_button);
         ROS_DEBUG("joy_msg_timeout: %f\n", joy_msg_timeout);
         
-        vel_pub_ = n_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-        passthrough_sub_ = n_.subscribe( "des_vel", 10, &TeleopBase::passthrough_cb, this );
-        joy_sub_ = n_.subscribe("joy", 10, &TeleopBase::joy_cb, this);
+        vel_pub_ = n_pub_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+        passthrough_sub_ = n_pub_.subscribe( "des_vel", 10, &TeleopBase::passthrough_cb, this );
+        joy_sub_ = n_pub_.subscribe("joy", 10, &TeleopBase::joy_cb, this);
 
  
 	}
@@ -202,7 +203,7 @@ class TeleopBase
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "teleop_base");
-	ros::NodeHandle nh;
+	ros::NodeHandle nh("~");
   const char* opt_no_publish    = "--deadman_no_publish";
   
   bool no_publish = false;
